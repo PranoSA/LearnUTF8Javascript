@@ -32,20 +32,20 @@ function analyzeCodePointByteArray(byteArray, numBytes){
             //First Byte first 3 bits don't matter, its & 0b00011111 or & 0x1F
             switch(numBytes){
                 case 1:
-                    significant_bits += (next_byte & 0xFF)
+                    significant_bits = (next_byte & 0xFF)
                     accumulated_value += (next_byte & 0xFF) * multiplier
                     
                     break;
                 case 2:
-                    significant_bits += (next_byte & 0x1F)
+                    significant_bits = (next_byte & 0x1F)
                     accumulated_value += (next_byte & 0x1F)*multiplier
                     break;
                 case 3:
-                    significant_bits += (next_byte & 0x0F)
+                    significant_bits = (next_byte & 0x0F)
                     accumulated_value += (next_byte & 0x0F)*multiplier
                     break;
                 case 4:
-                    significant_bits += (next_byte & 0x07)
+                    significant_bits = (next_byte & 0x07)
                     accumulated_value += (next_byte & 0x07)*multiplier  
                     break;
             }
@@ -53,19 +53,20 @@ function analyzeCodePointByteArray(byteArray, numBytes){
         
         else {
             accumulated_value += (next_byte&0x3F)*multiplier 
+            significant_bits = (next_byte&0x3F)
         }
 
         let masked_bits = byte_index == 0 ? numBytes + 1 : 2 
 
         console.log(`\t  ${next_byte.toString(16).padStart(2,'0')} : ${next_byte.toString(2).padStart(8, '0')}`);
-        console.log(`\t\t ${significant_bits}(${(significant_bits.toString(2).padStart(8-masked_bits,'0')).padStart(8,'x')}) * ${multiplier} = ${multiplier*significant_bits}`)
+        console.log(`\t\t ${significant_bits.toString(10)}(${(significant_bits.toString(2).padStart(8-masked_bits,'0')).padStart(8,'x')}) * ${multiplier} = ${multiplier*significant_bits}`)
 
     }
 
 
 
-    console.log(`\t\tCalculated Decimal Value = ${accumulated_value}`)
-    console.log(`\t\tCalculated Hexadecimal Value = ${accumulated_value.toString(16)}`)    
+    console.log(`\tCalculated Decimal Value = ${accumulated_value}`)
+    console.log(`\tCalculated Hexadecimal Value = ${accumulated_value.toString(16)}`)    
 }
 
 
@@ -190,16 +191,16 @@ const tan_facepalming_emoji_woman= "🤦🏽‍♀️"
 
 
 // Intentionally Screw up and make an invalid sequence
-const fuckUpedfacepalmingemojiwoman = Buffer.from(tan_facepalming_emoji_woman);
+const messUpedfacepalmingemojiwoman = Buffer.from(tan_facepalming_emoji_woman);
 
 //Lets go to position 5 and rewrite the byte 
-fuckUpedfacepalmingemojiwoman[5] =  fuckUpedfacepalmingemojiwoman[5] & 0x7F //Set the First Bit to 0
+messUpedfacepalmingemojiwoman[5] =  messUpedfacepalmingemojiwoman[5] & 0x7F //Set the First Bit to 0
 
 //Lets Create an Invalid Encoding of the number of bytes 
 
-const fuckedupFirstByte = Buffer.from(tan_facepalming_emoji_woman);
+const messedupFirstByte = Buffer.from(tan_facepalming_emoji_woman);
 //Make 4th Bit 0
-fuckedupFirstByte[0] = 0xEF & fuckedupFirstByte[0]
+messedupFirstByte[0] = 0xEF & messedupFirstByte[0]
 
 
 //Run Program
@@ -207,7 +208,7 @@ async function runProgram(){
     await analyzeUtf8String(Buffer.from(tan_facepalming_emoji_woman));
     await analyzeUtf8String(Buffer.from("❄️"))
     await analyzeUtf8String(Buffer.from("🐳"))
-    await analyzeUtf8String(fuckedupFirstByte)
+    await analyzeUtf8String(messedupFirstByte)
 }
 
 
