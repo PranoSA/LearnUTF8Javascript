@@ -211,6 +211,7 @@ function analyzeUtf8String(buffer)  {
 
       console.log("\n")
     }
+    console.log('\n\n\n' + buffer.toString('utf-8'));
 }
 
 //analyze utf8 string
@@ -233,3 +234,7 @@ const fuckedupFirstByte = Buffer.from(tan_facepalming_emoji_woman);
 //Make 4th Bit 0
 fuckedupFirstByte[0] = 0xDF & fuckedupFirstByte[0]
 //analyzeUtf8String(fuckedupFirstByte)
+
+
+
+analyzeUtf8String(Buffer.from("❄️"))
