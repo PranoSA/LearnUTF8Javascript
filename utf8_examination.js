@@ -4,105 +4,62 @@ function analyzeBinaryRepresentation(){}
     That Represents the Maximum Value for the preceeding bytes of a 2 string UTF-8 sequence
 */
 
-const maxValuesLength2 = {
-    '0':  0x40, //0x3F, // 0b0011111     or 0x3F
-    '1' : 0x20 * 0x40 //0x1F*0x3F //0b00011111 or 0x1F
-}
+const maxRepresentativeValues = [1, 0x40, 0x40*0x40, 0x40*0x40*0x40];
 
-/*
-    That Represents the Maximum Value for the preceeding bytes of a 3 string UTF-8 sequence
-*/
-const maxValuesLength3 = {
-    '0': 0x40, //0x3F,
-    '1': 0x40 * 0x40 ,//0x3F *0x3F,
-    '2' :  0x10 * 0x40 * 0x40 //0x0F * 0x3F * 0x3F //0b00001111 or 0x0F
-}
-
-const maxValuesLength4 = {
-    '0':  0x40, //0x3F, //First 2 bits don't matter, so 0b00111111 or 0x3F
-    '1' : 0x40*0x40, //0x3F * 0x3F,
-    '2' : 0x40*0x40*0x40, //0x3F *0x3F*0x3F,
-    '3' :  0x10*0x40*0x40*0x40 //0x07 *0x3F*0x3F*0x3F //0b11110111 -> corresponds to 0b00000111, 0b00000111 or 0x07
-}
 
 function analyzeCodePointByteArray(byteArray, numBytes){
 
-    /*
-        We Can Assmume Code Point is Valid
-
-        We Will Print out the Binary Representation of the Code Point
-
-        Then We Will Print out how the U+ Value is Contrived From THe Binary Represetation 
-
-    */
-
-    if(numBytes == 1){
-        //In This instance its simply the value of the code point * 1 
-        console.log(`\t Hexdecimal Representation: ${byteArray[0].toString('hex').padStart(2*numBytes, '0')}*1 = ${byte}`)
-
-    }
-
-    if(numBytes == 2){
-        //In This Instance its maxValuesLength2[0] * value of first byte 
-
-        //First Byte first 3 bits don't matter, its & 0b00011111 or & 0x1F
-        
-        first_byte = 0x1F & byteArray[0]
-        console.log(`\t  ${byteArray[0].toString(2).padStart(8, '0') } = ${first_byte} * ${maxValuesLength2[0]} = ${first_byte*maxValuesLength2[0]}`);
-        
-        // The rest, the first 2 bits don't matter
-        second_byte = 0x3F & byteArray[1]
-        console.log(`\t  ${byteArray[1].toString(2).padStart(8, '0') } = ${second_byte} * 1 = ${second_byte}`);
-
-        console.log(`\t\tCalculated Value = ${first_byte*maxValuesLength2[0] + second_byte}`)
-
-    }
-    if(numBytes == 3){
-        //In This Instance its maxValuesLength3[0] * value of first byte 
-
-        //First Byte first 4 bits don't matter, its & 0b00001111 or & 0x1F
-        
-        first_byte = 0x0F & byteArray[0]
-        console.log(`\t  ${byteArray[0].toString(2).padStart(8, '0') } = ${first_byte} * ${maxValuesLength3[1]} = ${first_byte*maxValuesLength3[1]}`);
-        
-        // The rest, the first 2 bits don't matter
-        second_byte = 0x3F & byteArray[1]
-        console.log(`\t  ${byteArray[1].toString(2).padStart(8, '0') } = ${second_byte} * ${maxValuesLength3[0]} = ${second_byte*maxValuesLength3[0]}`);
-
-        // The rest, the first 2 bits don't matter
-        third_byte = 0x3F & byteArray[2]
-        console.log(`\t  ${byteArray[2].toString(2).padStart(8, '0') } = ${third_byte} * 1 = ${third_byte}`);
-
-        console.log(`\t\tCalculated Value = ${first_byte*maxValuesLength3[1] + second_byte*maxValuesLength3[0] + third_byte}`)
-
+    // How Many Values
     
+
+    //First Byte?? 
+
+    let accumulated_value = 0
+
+    for(let byte_index = 0; byte_index < numBytes; byte_index ++){
+        let next_byte = byteArray[byte_index]
+        let multiplier = maxRepresentativeValues[numBytes-byte_index-1];
+
+        let significant_bits = 0
+
+        //Bytes that matter to coutning towards the U+ value
+
+        //Is it the first byte 
+        if(byte_index == 0){
+            //First Byte first 3 bits don't matter, its & 0b00011111 or & 0x1F
+            switch(numBytes){
+                case 1:
+                    significant_bits += (next_byte & 0xFF)
+                    accumulated_value += (next_byte & 0xFF) * multiplier
+                    
+                    break;
+                case 2:
+                    significant_bits += (next_byte & 0x1F)
+                    accumulated_value += (next_byte & 0x1F)*multiplier
+                    break;
+                case 3:
+                    significant_bits += (next_byte & 0x0F)
+                    accumulated_value += (next_byte & 0x0F)*multiplier
+                    break;
+                case 4:
+                    significant_bits += (next_byte & 0x07)
+                    accumulated_value += (next_byte & 0x07)*multiplier  
+                    break;
+            }
+        }
+        
+        else {
+            accumulated_value += (next_byte&0x3F)*multiplier 
+        }
+
+        console.log(`\t  ${next_byte.toString(16).padStart(2,'0')} : ${next_byte.toString(2).padStart(8, '0')}= ${next_byte} * ${multiplier} = ${multiplier*significant_bits}`);
+
     }
 
-    if(numBytes == 4){
-        //In This Instance its maxValuesLength4[0] * value of first byte 
 
-        //First Byte first 5 bits don't matter, its & 0b00000111 or & 0x1F
-        
-        first_byte = 0x07 & byteArray[0]
-        console.log(`\t  ${byteArray[0].toString(2).padStart(8, '0') } = ${first_byte} * ${maxValuesLength4[2]} = ${first_byte*maxValuesLength4[2]}`);
-        
-        // The rest, the first 2 bits don't matter
-        second_byte = 0x3F & byteArray[1]
-        console.log(`\t  ${byteArray[1].toString(2).padStart(8, '0') } = ${second_byte} * ${maxValuesLength4[1]} = ${second_byte*maxValuesLength4[1]}`);
 
-        // The rest, the first 2 bits don't matter
-        third_byte = 0x3F & byteArray[2]
-        console.log(`\t  ${byteArray[2].toString(2).padStart(8, '0') } = ${third_byte} * ${maxValuesLength4[0]} = ${third_byte*maxValuesLength4[0]}`);
-
-        // The rest, the first 2 bits don't matter
-        fourth_byte = 0x3F & byteArray[3]
-        console.log(`\t  ${byteArray[3].toString(2).padStart(8, '0') } = ${fourth_byte} * 1 = ${fourth_byte}`);
-
-        console.log(`\t\tCalculated Value = ${first_byte*maxValuesLength4[2] + second_byte*maxValuesLength4[1] + third_byte*maxValuesLength4[0] + fourth_byte}`)
-
-    }
-
-    
+    console.log(`\t\tCalculated Decimal Value = ${accumulated_value}`)
+    console.log(`\t\tCalculated Hexadecimal Value = ${accumulated_value.toString(16)}`)    
 }
 
 
@@ -211,7 +168,7 @@ function analyzeUtf8String(buffer)  {
 
       console.log("\n")
     }
-    console.log('\n\n\n' + buffer.toString('utf-8'));
+    console.log('' + buffer.toString('utf-8') + '\n');
 }
 
 //analyze utf8 string
@@ -232,9 +189,12 @@ fuckUpedfacepalmingemojiwoman[5] =  fuckUpedfacepalmingemojiwoman[5] & 0x7F //Se
 
 const fuckedupFirstByte = Buffer.from(tan_facepalming_emoji_woman);
 //Make 4th Bit 0
-fuckedupFirstByte[0] = 0xDF & fuckedupFirstByte[0]
+fuckedupFirstByte[0] = 0xEF & fuckedupFirstByte[0]
 //analyzeUtf8String(fuckedupFirstByte)
 
+
+
+analyzeUtf8String(Buffer.from("❄️"))
 
 
 analyzeUtf8String(Buffer.from("❄️"))
