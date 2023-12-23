@@ -68,6 +68,10 @@ function analyzeCodePointByteArray(byteArray, numBytes){
 
 function analyzeUtf8String(buffer)  {
     // Iterate through the Buffer
+
+    console.log('----------------------------------------------------------------------------------------------')
+    console.log("\n"+buffer.toString('utf-8')+"\n")
+
     for (let i = 0; i < buffer.length;) {
         /**
         
@@ -151,11 +155,12 @@ function analyzeUtf8String(buffer)  {
       //utf8Sequence.subArray(i+numBytes)
 
 
-      console.log(`Code Point at position ${i}: U+${codePoint.toString(16)},  Decimal Value of ${codePoint.toString(10)}, Number Bytes ${numBytes}`);
+      console.log(`Code Point at position ${i}: U+${codePoint.toString(16)},   Number Bytes ${numBytes}`);
 
-      console.log(`\t Hexdecimal Representation: ${subArray.toString('hex').padStart(2*numBytes, '0')}`)
+      console.log(`\t Raw Hexdecimal Representation: ${subArray.toString('hex').padStart(2*numBytes, '0')} \n`)
       //console.log(`\t Binary Representation: ${subArray.toString(2).padStart(8*numBytes, '0')}`)
       console.log("Byte By Byte Calculation")
+
 
       /*for (let byte of subArray) {
         console.log(`\t  ${byte.toString(2).padStart(8, '0') } = ${byte & 0x7F}`);
