@@ -52,7 +52,10 @@ function analyzeCodePointByteArray(byteArray, numBytes){
             accumulated_value += (next_byte&0x3F)*multiplier 
         }
 
-        console.log(`\t  ${next_byte.toString(16).padStart(2,'0')} : ${next_byte.toString(2).padStart(8, '0')}= ${next_byte} * ${multiplier} = ${multiplier*significant_bits}`);
+        let masked_bits = byte_index == 0 ? numBytes + 1 : 2 
+
+        console.log(`\t  ${next_byte.toString(16).padStart(2,'0')} : ${next_byte.toString(2).padStart(8, '0')}`);
+        console.log(`\t\t ${significant_bits}(${(significant_bits.toString(2).padStart(8-masked_bits,'0')).padStart(8,'x')}) * ${multiplier} = ${multiplier*significant_bits}`)
 
     }
 
@@ -192,9 +195,6 @@ const fuckedupFirstByte = Buffer.from(tan_facepalming_emoji_woman);
 fuckedupFirstByte[0] = 0xEF & fuckedupFirstByte[0]
 //analyzeUtf8String(fuckedupFirstByte)
 
-
-
-analyzeUtf8String(Buffer.from("❄️"))
 
 
 analyzeUtf8String(Buffer.from("❄️"))
