@@ -1,7 +1,10 @@
+
+const base_url_api = "https://codepoints.net/api/v1/codepoint/";
+
 function analyzeBinaryRepresentation(){}
 
-/*Javascript Obect
-    That Represents the Maximum Value for the preceeding bytes of a 2 string UTF-8 sequence
+/*
+    Represents the Maximum Value for the preceeding bytes of a 2 string UTF-8 sequence
 */
 
 const maxRepresentativeValues = [1, 0x40, 0x40*0x40, 0x40*0x40*0x40];
@@ -66,11 +69,13 @@ function analyzeCodePointByteArray(byteArray, numBytes){
 }
 
 
-function analyzeUtf8String(buffer)  {
+async function analyzeUtf8String(buffer)  {
     // Iterate through the Buffer
 
     console.log('----------------------------------------------------------------------------------------------')
     console.log("\n"+buffer.toString('utf-8')+"\n")
+
+    let which_grapheme = 0
 
     for (let i = 0; i < buffer.length;) {
         /**
@@ -81,7 +86,7 @@ function analyzeUtf8String(buffer)  {
     
         By the preceeding number of 1s in the binary number 
         */
-    
+    which_grapheme++
     
       // Get the first byte of the UTF-8 sequence
       const firstByte = buffer[i];
@@ -152,25 +157,26 @@ function analyzeUtf8String(buffer)  {
 
 
       let subArray = utf8Sequence
-      //utf8Sequence.subArray(i+numBytes)
 
+      //Fetch From the API at codepoints.net at base_url + "codePoint.toString(16)", and get the .na in the json document
 
-      console.log(`Code Point at position ${i}: U+${codePoint.toString(16)},   Number Bytes ${numBytes}`);
+      let characterName = ""
+
+      const res = await fetch(base_url_api + codePoint.toString(16));
+
+      const body = await res.json();
+
+      characterName = body.na;
+
+      console.log(`Code Point at position ${i}: U+${codePoint.toString(16)},   Number Bytes ${numBytes}, Grapheme ${which_grapheme} : ${String.fromCodePoint(codePoint)} : (${characterName})`);
 
       console.log(`\t Raw Hexdecimal Representation: ${subArray.toString('hex').padStart(2*numBytes, '0')} \n`)
-      //console.log(`\t Binary Representation: ${subArray.toString(2).padStart(8*numBytes, '0')}`)
       console.log("Byte By Byte Calculation")
 
 
-      /*for (let byte of subArray) {
-        console.log(`\t  ${byte.toString(2).padStart(8, '0') } = ${byte & 0x7F}`);
-        }
-    */
+    analyzeCodePointByteArray(subArray, numBytes)
 
-        analyzeCodePointByteArray(subArray, numBytes)
 
-      //console.log(`t ${subArray.toString(2)}`)
-      //console.log(`\t  ${subArray.toString(2).padStart(8*numBytes, '0')}`);
       // Move to the next position in the Buffer
       i += numBytes;
 
@@ -181,9 +187,6 @@ function analyzeUtf8String(buffer)  {
 
 //analyze utf8 string
 const tan_facepalming_emoji_woman= "🤦🏽‍♀️"
-analyzeUtf8String(Buffer.from(tan_facepalming_emoji_woman));
-
-
 
 
 // Intentionally Screw up and make an invalid sequence
@@ -191,15 +194,24 @@ const fuckUpedfacepalmingemojiwoman = Buffer.from(tan_facepalming_emoji_woman);
 
 //Lets go to position 5 and rewrite the byte 
 fuckUpedfacepalmingemojiwoman[5] =  fuckUpedfacepalmingemojiwoman[5] & 0x7F //Set the First Bit to 0
-//analyzeUtf8String(fuckUpedfacepalmingemojiwoman);
 
 //Lets Create an Invalid Encoding of the number of bytes 
 
 const fuckedupFirstByte = Buffer.from(tan_facepalming_emoji_woman);
 //Make 4th Bit 0
 fuckedupFirstByte[0] = 0xEF & fuckedupFirstByte[0]
-//analyzeUtf8String(fuckedupFirstByte)
 
 
+//Run Program
+async function runProgram(){
+    await analyzeUtf8String(Buffer.from(tan_facepalming_emoji_woman));
+    await analyzeUtf8String(Buffer.from("❄️"))
+    await analyzeUtf8String(Buffer.from("🐳"))
+    await analyzeUtf8String(fuckedupFirstByte)
+}
 
-analyzeUtf8String(Buffer.from("❄️"))
+
+//Wait For Results
+runProgram().then(
+    console.log("Completed")
+).catch(err => console.log(err))
